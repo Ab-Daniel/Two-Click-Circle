@@ -4,100 +4,85 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 
-public class TriangleComponent extends JComponent
+public class TwoClickCircleComponent extends JPanel
 {
-	
-	public TriangleComponent()
+	private static final long serialVersionUID = 1L;
+	public TwoClickCircleComponent()
 	{
 		
-		mouseClickTrack = 0;
-		p1 = null;
-		p2 = null;
-		p3 = null;
+		track = 0;
+		center = null;
+		onCircle = null;
 		
-		class MousePressListener extends MouseAdapter
+		class MouseSpy extends MouseAdapter
 		{
 			
 			
 			public void mouseClicked(MouseEvent event)
 			{
 				
+				if(track == 0)
+				{
+					
+					center = new Point2D.Double(event.getX(), event.getY());
+					onCircle = null;
+					
+				}
 				
-				if(mouseClickTrack == 0)
+				if (track == 1)
 				{
-					p1 = new Point2D.Double(event.getX(), event.getY());
-					p2 = null;
-					p3 = null;
+					
+					onCircle = new Point2D.Double(event.getX(), event.getY());
+					
 				}
-				if(mouseClickTrack == 1)
-				{
-					p2 = new Point2D.Double(event.getX(), event.getY());
-				}
-				if(mouseClickTrack == 2)
-				{
-					p3 = new Point2D.Double(event.getX(), event.getY());
-				}
-				mouseClickTrack++;
+				
+				track++;
 				repaint();
-				
-				/*
-				double x = event.getX( );
-				double y = event.getY( );
-				
-				p = new Point2D.Double(x, y);
-				repaint( );
-				*/
 				
 			}
 			
 		}
 		
-		MouseListener listener = new MousePressListener();
+		MouseSpy listener = new MouseSpy();
 		addMouseListener(listener);
 		
 	}
 	
-	public void paintComponent(Graphics g)
+	public void paintCompoent(Graphics g)
 	{
 		
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D)g; //recovers Graphics2D
 		
-		//plotPoints(g2);
-		
-		if(p1 != null)
+		if(center != null)
 		{
-			plotPoint(g2, p1);
+			plotPoint(g2, center);
+			
+			if(onCircle != null)
+			{
+				plotPoint(g2, onCircle);
+				/*
+				double diameter = 2 * (Math.sqrt( Math.pow(onCircle.getX()-center.getX(), 2) + 
+						Math.pow(onCircle.getY() - center.getY(), 2)) );
+				g2.drawOval((int)(center.getX() - diameter/2),(int)( center.getX() - diameter/2),(int) diameter,(int) diameter);
+				*/
+				drawCircle(g2);
+				
+				
+			}
 			
 		}
 		
-		if(p2 != null)
+		if(onCircle != null && center != null)
 		{
-			plotPoint(g2, p2);
-			drawLine(g2, p1, p2);
+			track = 0;
 		}
 		
-		if(p3 != null)
-		{
-			plotPoint(g2, p3);
-			drawLine(g2, p1, p3);
-			drawLine(g2, p2, p3);
-			mouseClickTrack = 0;
-		}
-		
-		
-	}
-	
-	public void drawLine(Graphics2D g2, Point2D.Double point1, Point2D.Double point2)
-	{
-		
-		Line2D.Double line = new Line2D.Double(point1, point2);
-		g2.draw(line);
 	}
 	
 	public void plotPoint(Graphics2D g2, Point2D.Double point)
@@ -106,19 +91,26 @@ public class TriangleComponent extends JComponent
 		double x = point.getX();
 		double y = point.getY();
 		
-		Ellipse2D.Double dot = new Ellipse2D.Double(x, y, 5, 5);
+		Ellipse2D.Double dot = new Ellipse2D.Double(x - 5, y - 5, 10, 10);
 		g2.fill(dot);
-		
 		
 	}
 	
+	public void drawCircle(Graphics2D g2)
+	{
+		
+		double diameter = 2 * (Math.sqrt( Math.pow(onCircle.getX()-center.getX(), 2) + 
+				Math.pow(onCircle.getY() - center.getY(), 2)) );
+		
+		Ellipse2D.Double circle = new Ellipse2D.Double((int)(center.getX() - diameter/2), (int)( center.getX() - diameter/2),
+				(int) diameter, (int) diameter);
+		g2.draw(circle);
+		
+	}
 	
-	private int mouseClickTrack;
+	private int track;
 	
-	//private Point2D.Double p;
-	
-	private Point2D.Double p1;
-	private Point2D.Double p2;
-	private Point2D.Double p3;
+	private Point2D.Double onCircle;
+	private Point2D.Double center;
 	
 }
